@@ -74,6 +74,14 @@
     header h1 { font-size: 1.4rem; }
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* Tabs */
+  .tab-bar { display: flex; gap: 0; margin: 0 0 32px; border-bottom: 2px solid var(--border); }
+  .tab-btn { padding: 12px 28px; font-size: 1rem; font-weight: 600; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 </style>
 </head>
 <body>
@@ -89,6 +97,14 @@
 
 <!-- KPI Cards -->
 <div class="kpi-row" id="kpi-row"></div>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">マクロ概況</button>
+  <button class="tab-btn" onclick="switchTab('price')">物価詳細分析</button>
+</div>
+
+<div id="tab-overview" class="tab-panel active">
 
 <!-- 1. Monetary Policy -->
 <section>
@@ -207,6 +223,9 @@
   </div>
 </section>
 
+</div><!-- end tab-overview -->
+
+<div id="tab-price" class="tab-panel">
 
 <!-- ============================================ -->
 <!-- 物価詳細分析 セクション -->
@@ -303,6 +322,8 @@
     </div>
   </div>
 </section>
+
+</div><!-- end tab-price -->
 
 </div>
 
@@ -473,6 +494,8 @@ const PRICE_DATA = {"PRCG20_2200120001":[{"date":"2021-01-01","value":100.5},{"d
 
 const priceColors = ['#e53e3e', '#d69e2e', '#38a169', '#3182ce', '#805ad5', '#d53f8c', '#dd6b20', '#319795', '#718096'];
 
+
+function renderPriceCharts() {
 function pDates(code) { return PRICE_DATA[code].map(d => d.date); }
 function pVals(code) { return PRICE_DATA[code].map(d => d.value); }
 
@@ -618,6 +641,35 @@ Plotly.newPlot('chart-services-bar', [{
   xaxis: { ...layoutBase.xaxis, title: '指数', range: [95, Math.max(...svcLatest.map(d => d.value)) * 1.12] },
   shapes: [{ type: 'line', x0: 100, x1: 100, y0: -0.5, y1: svcLatest.length - 0.5, line: { color: '#a0aec0', width: 1.5, dash: 'dot' } }],
 }, { responsive: true });
+
+
+}
+
+
+// === Tab Switching ===
+let priceChartsRendered = false;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+  if (tab === 'overview') {
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+    document.getElementById('tab-overview').classList.add('active');
+  } else {
+    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    document.getElementById('tab-price').classList.add('active');
+    if (!priceChartsRendered) {
+      priceChartsRendered = true;
+      setTimeout(renderPriceCharts, 50);
+    } else {
+      // Resize existing charts so they fit the now-visible container
+      ['chart-commodity','chart-commodity-bar','chart-exim-yen','chart-exim-contract',
+       'chart-stage-all','chart-stage-foods','chart-stage-energy','chart-services','chart-services-bar'
+      ].forEach(id => { const el = document.getElementById(id); if (el) Plotly.Plots.resize(el); });
+    }
+  }
+}
 
 </script>
 
