@@ -5,6 +5,7 @@ from components.sidebar import render_sidebar
 from components.charts import create_time_series_chart, create_multi_series_chart
 from components.indicators import render_kpi_card
 from components.price_analysis import render_price_analysis
+from components.detail_analysis import render_detail_analysis
 from boj_client.api import fetch_data_by_code
 from boj_client.transformers import json_to_dataframe
 
@@ -17,7 +18,7 @@ start_date = selections["start_date"]
 end_date = selections["end_date"]
 selected_indicators = selections["indicators"]
 
-tab_overview, tab_price = st.tabs(["マクロ概況", "物価詳細分析"])
+tab_overview, tab_price, tab_detail = st.tabs(["マクロ概況", "物価詳細分析", "品目別詳細分析"])
 
 # === Tab 1: Overview ===
 with tab_overview:
@@ -80,3 +81,7 @@ with tab_overview:
 # === Tab 2: Price Analysis ===
 with tab_price:
     render_price_analysis(start_date, end_date)
+
+# === Tab 3: Detail Analysis ===
+with tab_detail:
+    render_detail_analysis(start_date, end_date)
