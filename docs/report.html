@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日本マクロ経済レポート 2021-2026</title>
+<script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+<style>
+  :root {
+    --primary: #1a365d;
+    --accent: #2b6cb0;
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --text: #2d3748;
+    --muted: #718096;
+    --border: #e2e8f0;
+    --up: #38a169;
+    --down: #e53e3e;
+    --phase1: #3182ce;
+    --phase2: #d69e2e;
+    --phase3: #e53e3e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header */
+  header { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; padding: 48px 0 40px; }
+  header h1 { font-size: 2rem; font-weight: 700; letter-spacing: 0.02em; }
+  header p { color: rgba(255,255,255,0.8); margin-top: 8px; font-size: 0.95rem; }
+
+  /* KPI Row */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: -32px 0 32px; position: relative; z-index: 1; }
+  .kpi-card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .kpi-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+  .kpi-value { font-size: 1.6rem; font-weight: 700; margin: 4px 0 2px; }
+  .kpi-delta { font-size: 0.85rem; font-weight: 600; }
+  .kpi-delta.up { color: var(--up); }
+  .kpi-delta.down { color: var(--down); }
+  .kpi-sub { font-size: 0.75rem; color: var(--muted); }
+
+  /* Section */
+  section { margin-bottom: 48px; }
+  .section-title { font-size: 1.35rem; font-weight: 700; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 12px; margin-bottom: 16px; }
+  .section-desc { background: var(--card); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .section-desc h3 { font-size: 0.85rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .section-desc p { font-size: 0.92rem; color: var(--text); }
+  .chart-card { background: var(--card); border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding: 24px 0; }
+  .timeline::before { content: ''; position: absolute; left: 24px; top: 0; bottom: 0; width: 3px; background: var(--border); }
+  .phase { position: relative; padding: 0 0 32px 64px; }
+  .phase-dot { position: absolute; left: 16px; top: 4px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px; }
+  .phase-dot.p1 { background: var(--phase1); box-shadow: 0 0 0 2px var(--phase1); }
+  .phase-dot.p2 { background: var(--phase2); box-shadow: 0 0 0 2px var(--phase2); }
+  .phase-dot.p3 { background: var(--phase3); box-shadow: 0 0 0 2px var(--phase3); }
+  .phase h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+  .phase h3 .badge { display: inline-block; font-size: 0.75rem; padding: 2px 10px; border-radius: 99px; color: #fff; margin-left: 8px; vertical-align: middle; }
+  .badge.p1 { background: var(--phase1); }
+  .badge.p2 { background: var(--phase2); }
+  .badge.p3 { background: var(--phase3); }
+  .phase p { font-size: 0.92rem; color: var(--text); }
+
+  /* Key Insights */
+  .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .insight-card { background: var(--card); border-radius: 10px; padding: 20px; border-left: 4px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .insight-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .insight-card p { font-size: 0.88rem; }
+
+  footer { text-align: center; padding: 32px 0; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--border); margin-top: 48px; }
+
+  @media (max-width: 768px) {
+    header h1 { font-size: 1.4rem; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>日本マクロ経済レポート 2021 - 2026</h1>
+    <p>日本銀行 時系列統計データ API に基づく主要指標分析 | 2026年2月19日作成</p>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- KPI Cards -->
+<div class="kpi-row" id="kpi-row"></div>
+
+<!-- 1. Monetary Policy -->
+<section>
+  <h2 class="section-title">金融政策 - 金利・マネタリーベース</h2>
+  <div class="section-desc">
+    <h3>指標の意味</h3>
+    <p><strong>コールレート</strong>は金融機関間の翌日物金利で、日銀政策金利の実効値。<strong>基準割引率</strong>は日銀が金融機関に貸し付ける際の基準金利（旧公定歩合）。<strong>マネタリーベース</strong>は日銀が供給する通貨の総量（日銀当座預金＋流通現金）。</p>
+  </div>
+  <div class="chart-card"><div id="chart-rates" style="height:400px"></div></div>
+  <div class="chart-card"><div id="chart-mb" style="height:380px"></div></div>
+  <div class="section-desc">
+    <h3>トレンド分析</h3>
+    <p>2021〜2023年はマイナス金利政策を維持し、コールレートは-0.01〜-0.07%で推移。2024年3月のマイナス金利解除を契機に正の領域へ転換し、2026年1月には0.73%に到達。基準割引率も0.30%から段階的に引き上げられ、2025年12月に1.00%と2008年以来の高水準に。マネタリーベースは2024年まで670兆円台で推移していたが、2025年に明確な縮小に転じ、2026年1月には589兆円まで減少。<strong>約17年ぶりの本格的な利上げサイクルと量的引き締め（QT）が同時進行している。</strong></p>
+  </div>
+</section>
+
+<!-- 2. Money Stock -->
+<section>
+  <h2 class="section-title">通貨供給量 - マネーストック</h2>
+  <div class="section-desc">
+    <h3>指標の意味</h3>
+    <p><strong>M2</strong>は現金通貨＋預金通貨＋準通貨＋CD。<strong>M3</strong>はM2に郵便貯金・農協預金等を加えた最広義の通貨量。経済全体の資金循環を表す。</p>
+  </div>
+  <div class="chart-card"><div id="chart-ms" style="height:400px"></div></div>
+  <div class="section-desc">
+    <h3>トレンド分析</h3>
+    <p>M2・M3ともに一貫して増加しているが、伸び率は鈍化。M2の前年比は2022年+3.3%→2025年+1.2%。マネタリーベースが縮小に転じてもマネーストックが増加を続けている点が重要で、<strong>民間銀行の信用創造（貸出増）が日銀の量的引き締めを相殺</strong>していることを意味する。ただし伸び率の低下は、金利上昇による借入需要の減退を示唆。</p>
+  </div>
+</section>
+
+<!-- 3. Prices & Exchange -->
+<section>
+  <h2 class="section-title">物価・為替</h2>
+  <div class="section-desc">
+    <h3>指標の意味</h3>
+    <p><strong>企業物価指数 (CGPI)</strong>は企業間取引される財の価格水準（2020年=100）。原材料・中間財のコスト変動を反映し、消費者物価に先行する。<strong>USD/JPY</strong>は東京市場のドル円月中平均レートで、輸出入価格やインバウンド消費に直結。</p>
+  </div>
+  <div class="chart-card"><div id="chart-cgpi" style="height:380px"></div></div>
+  <div class="chart-card"><div id="chart-fx" style="height:380px"></div></div>
+  <div class="section-desc">
+    <h3>トレンド分析</h3>
+    <p>企業物価は2022年に前年比+10%の急騰（ウクライナ情勢・資源高・円安の三重効果）。2023年に一旦安定したが、2024〜2025年に再加速し、2026年1月に128.4と2020年比<strong>+28.4%</strong>。為替は2021年の110円台から2022年に急落し、2024年6月には157.90円の歴史的円安を記録。日銀利上げで2025年春に144円台まで回復したが、年末には再び155円台へ。<strong>金利差縮小にもかかわらず構造的な円安が定着</strong>しており、貿易赤字・デジタル赤字が円安の構造要因とされる。</p>
+  </div>
+</section>
+
+<!-- 4. Business Conditions -->
+<section>
+  <h2 class="section-title">景気動向 - 短観DI</h2>
+  <div class="section-desc">
+    <h3>指標の意味</h3>
+    <p><strong>短観 業況判断DI</strong>は日銀が四半期ごとに実施する企業調査。「良い」回答割合から「悪い」回答割合を引いた値。プラスなら景況感良好、マイナスなら悪化。大企業製造業DIは日本経済の先行指標として最も注目される。</p>
+  </div>
+  <div class="chart-card"><div id="chart-tankan" style="height:400px"></div></div>
+  <div class="section-desc">
+    <h3>トレンド分析</h3>
+    <p>2021年はコロナ禍からのV字回復で+5→+18と急改善。2022年は資源高・サプライチェーン混乱で+14→+7と悪化。2023年Q1に+1まで落ち込んだ後、回復基調に入り2025年Q4には+15。<strong>実績DIは安定的にプラス圏で推移</strong>し、製造業の景況感は「緩やかに良好」。予測DIは常に実績を大幅に上回っており（+33〜35）、<strong>企業の先行き見通しは楽観的</strong>な状態が続いている。</p>
+  </div>
+</section>
+
+<!-- 5. External Balance -->
+<section>
+  <h2 class="section-title">対外収支 - 経常収支</h2>
+  <div class="section-desc">
+    <h3>指標の意味</h3>
+    <p><strong>経常収支</strong>は貿易収支＋サービス収支＋第一次所得収支＋第二次所得収支の合計。黒字なら日本が海外から純所得を得ていることを意味する。</p>
+  </div>
+  <div class="chart-card"><div id="chart-bop" style="height:400px"></div></div>
+  <div class="section-desc">
+    <h3>トレンド分析</h3>
+    <p>2022年に年間11.4兆円と大幅悪化（前年比▲47%）。エネルギー価格高騰による貿易赤字が主因。2023年以降は急回復し、2025年は年間31.9兆円と過去最高水準に。<strong>第一次所得収支（海外投資からの配当・利子）の拡大が牽引</strong>しており、日本が「貿易立国」から「投資立国」へ構造転換していることを示す。ただし月次ベースでは毎年1月に赤字となるなど季節性が大きい。</p>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section>
+  <h2 class="section-title">総合分析 - 3つのフェーズ</h2>
+  <div class="timeline">
+    <div class="phase">
+      <div class="phase-dot p1"></div>
+      <h3>超緩和の継続 <span class="badge p1">2021 - 2023</span></h3>
+      <p>マイナス金利を維持し、マネタリーベースは拡大基調。2022年にウクライナ情勢・FRB利上げを契機に円が急落（110→147円）、企業物価が前年比+10%急騰。コストプッシュ型インフレが始まるも、日銀は緩和を維持した。</p>
+    </div>
+    <div class="phase">
+      <div class="phase-dot p2"></div>
+      <h3>金融正常化の始動 <span class="badge p2">2024</span></h3>
+      <p>2024年3月にマイナス金利を解除。17年ぶりの利上げサイクルを開始し、基準割引率を0.50%に引き上げ。為替は一時143円台まで円高に振れたが、構造的円安の解消には至らず。</p>
+    </div>
+    <div class="phase">
+      <div class="phase-dot p3"></div>
+      <h3>本格的引き締め <span class="badge p3">2025 - 2026</span></h3>
+      <p>基準割引率1.00%到達、コールレート0.73%。マネタリーベースは明確な縮小に転じ量的引き締めが進行。それでも企業物価128台・円155円台で「構造的な物価上昇と通貨安」が定着した新局面に突入。</p>
+    </div>
+  </div>
+</section>
+
+<!-- Key Insights -->
+<section>
+  <h2 class="section-title">注目すべき構造変化</h2>
+  <div class="insight-grid">
+    <div class="insight-card">
+      <h4>マネタリーベース縮小 x マネーストック増加</h4>
+      <p>日銀がバランスシートを縮小しても、民間銀行の信用創造が補完。金融引き締めの実体経済への波及が限定的であることを示唆。</p>
+    </div>
+    <div class="insight-card">
+      <h4>金利上昇 x 円安持続</h4>
+      <p>日米金利差は縮小しているが、構造的な資本流出（デジタル赤字・貿易赤字）が円安を下支え。金融政策だけでは為替是正が困難な構造に。</p>
+    </div>
+    <div class="insight-card">
+      <h4>経常黒字拡大 x 貿易赤字常態化</h4>
+      <p>所得収支が貿易赤字を補って余りある「投資立国」型の構造に転換。海外資産からの収益が日本経済を支える柱に。</p>
+    </div>
+    <div class="insight-card">
+      <h4>企業物価の高止まり</h4>
+      <p>2020年比+28%で定着。デフレ脱却は達成したが、家計の実質購買力低下という新たな課題を提起。</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="container">
+    データソース: 日本銀行 時系列統計データ検索サイト API (https://www.stat-search.boj.or.jp/) | 本レポートは参考情報であり、投資判断の根拠とするものではありません。
+  </div>
+</footer>
+
+<script>
+const DATA = {"monetary_base": [{"date": "2021-01-01", "value": 6114206.0, "code": "MABS1AN11"}, {"date": "2021-02-01", "value": 6106078.0, "code": "MABS1AN11"}, {"date": "2021-03-01", "value": 6133816.0, "code": "MABS1AN11"}, {"date": "2021-04-01", "value": 6448961.0, "code": "MABS1AN11"}, {"date": "2021-05-01", "value": 6499142.0, "code": "MABS1AN11"}, {"date": "2021-06-01", "value": 6480471.0, "code": "MABS1AN11"}, {"date": "2021-07-01", "value": 6541081.0, "code": "MABS1AN11"}, {"date": "2021-08-01", "value": 6569573.0, "code": "MABS1AN11"}, {"date": "2021-09-01", "value": 6557964.0, "code": "MABS1AN11"}, {"date": "2021-10-01", "value": 6607426.0, "code": "MABS1AN11"}, {"date": "2021-11-01", "value": 6590000.0, "code": "MABS1AN11"}, {"date": "2021-12-01", "value": 6570831.0, "code": "MABS1AN11"}, {"date": "2022-01-01", "value": 6627169.0, "code": "MABS1AN11"}, {"date": "2022-02-01", "value": 6571737.0, "code": "MABS1AN11"}, {"date": "2022-03-01", "value": 6621323.0, "code": "MABS1AN11"}, {"date": "2022-04-01", "value": 6874736.0, "code": "MABS1AN11"}, {"date": "2022-05-01", "value": 6800213.0, "code": "MABS1AN11"}, {"date": "2022-06-01", "value": 6734841.0, "code": "MABS1AN11"}, {"date": "2022-07-01", "value": 6722218.0, "code": "MABS1AN11"}, {"date": "2022-08-01", "value": 6597138.0, "code": "MABS1AN11"}, {"date": "2022-09-01", "value": 6341934.0, "code": "MABS1AN11"}, {"date": "2022-10-01", "value": 6152627.0, "code": "MABS1AN11"}, {"date": "2022-11-01", "value": 6168203.0, "code": "MABS1AN11"}, {"date": "2022-12-01", "value": 6172224.0, "code": "MABS1AN11"}, {"date": "2023-01-01", "value": 6376936.0, "code": "MABS1AN11"}, {"date": "2023-02-01", "value": 6464403.0, "code": "MABS1AN11"}, {"date": "2023-03-01", "value": 6557809.0, "code": "MABS1AN11"}, {"date": "2023-04-01", "value": 6759281.0, "code": "MABS1AN11"}, {"date": "2023-05-01", "value": 6727323.0, "code": "MABS1AN11"}, {"date": "2023-06-01", "value": 6669938.0, "code": "MABS1AN11"}, {"date": "2023-07-01", "value": 6633513.0, "code": "MABS1AN11"}, {"date": "2023-08-01", "value": 6674477.0, "code": "MABS1AN11"}, {"date": "2023-09-01", "value": 6698608.0, "code": "MABS1AN11"}, {"date": "2023-10-01", "value": 6706127.0, "code": "MABS1AN11"}, {"date": "2023-11-01", "value": 6715329.0, "code": "MABS1AN11"}, {"date": "2023-12-01", "value": 6654863.0, "code": "MABS1AN11"}, {"date": "2024-01-01", "value": 6680019.0, "code": "MABS1AN11"}, {"date": "2024-02-01", "value": 6616688.0, "code": "MABS1AN11"}, {"date": "2024-03-01", "value": 6662400.0, "code": "MABS1AN11"}, {"date": "2024-04-01", "value": 6898964.0, "code": "MABS1AN11"}, {"date": "2024-05-01", "value": 6788243.0, "code": "MABS1AN11"}, {"date": "2024-06-01", "value": 6711098.0, "code": "MABS1AN11"}, {"date": "2024-07-01", "value": 6701436.0, "code": "MABS1AN11"}, {"date": "2024-08-01", "value": 6711832.0, "code": "MABS1AN11"}, {"date": "2024-09-01", "value": 6694463.0, "code": "MABS1AN11"}, {"date": "2024-10-01", "value": 6688723.0, "code": "MABS1AN11"}, {"date": "2024-11-01", "value": 6697481.0, "code": "MABS1AN11"}, {"date": "2024-12-01", "value": 6585240.0, "code": "MABS1AN11"}, {"date": "2025-01-01", "value": 6511079.0, "code": "MABS1AN11"}, {"date": "2025-02-01", "value": 6499369.0, "code": "MABS1AN11"}, {"date": "2025-03-01", "value": 6458519.0, "code": "MABS1AN11"}, {"date": "2025-04-01", "value": 6569773.0, "code": "MABS1AN11"}, {"date": "2025-05-01", "value": 6560120.0, "code": "MABS1AN11"}, {"date": "2025-06-01", "value": 6479525.0, "code": "MABS1AN11"}, {"date": "2025-07-01", "value": 6438964.0, "code": "MABS1AN11"}, {"date": "2025-08-01", "value": 6437775.0, "code": "MABS1AN11"}, {"date": "2025-09-01", "value": 6281080.0, "code": "MABS1AN11"}, {"date": "2025-10-01", "value": 6165980.0, "code": "MABS1AN11"}, {"date": "2025-11-01", "value": 6126869.0, "code": "MABS1AN11"}, {"date": "2025-12-01", "value": 5941943.0, "code": "MABS1AN11"}, {"date": "2026-01-01", "value": 5894035.0, "code": "MABS1AN11"}], "money_stock_m2": [{"date": "2021-01-01", "value": 11400194.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-02-01", "value": 11384748.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-03-01", "value": 11436375.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-04-01", "value": 11617797.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-05-01", "value": 11675413.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-06-01", "value": 11690901.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-07-01", "value": 11690056.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-08-01", "value": 11688405.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-09-01", "value": 11691501.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-10-01", "value": 11705647.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-11-01", "value": 11756672.0, "code": "MAM1NAM2M2MO"}, {"date": "2021-12-01", "value": 11782086.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-01-01", "value": 11813179.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-02-01", "value": 11789009.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-03-01", "value": 11833171.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-04-01", "value": 12018499.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-05-01", "value": 12042833.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-06-01", "value": 12078178.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-07-01", "value": 12088016.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-08-01", "value": 12088202.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-09-01", "value": 12075500.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-10-01", "value": 12064408.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-11-01", "value": 12124935.0, "code": "MAM1NAM2M2MO"}, {"date": "2022-12-01", "value": 12128301.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-01-01", "value": 12132455.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-02-01", "value": 12091386.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-03-01", "value": 12134406.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-04-01", "value": 12326939.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-05-01", "value": 12360428.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-06-01", "value": 12392324.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-07-01", "value": 12388936.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-08-01", "value": 12385266.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-09-01", "value": 12363619.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-10-01", "value": 12353137.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-11-01", "value": 12399055.0, "code": "MAM1NAM2M2MO"}, {"date": "2023-12-01", "value": 12409742.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-01-01", "value": 12430886.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-02-01", "value": 12387111.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-03-01", "value": 12443081.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-04-01", "value": 12599872.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-05-01", "value": 12588848.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-06-01", "value": 12574420.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-07-01", "value": 12569139.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-08-01", "value": 12548351.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-09-01", "value": 12517047.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-10-01", "value": 12500641.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-11-01", "value": 12549271.0, "code": "MAM1NAM2M2MO"}, {"date": "2024-12-01", "value": 12576036.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-01-01", "value": 12594584.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-02-01", "value": 12532312.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-03-01", "value": 12546125.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-04-01", "value": 12661783.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-05-01", "value": 12670431.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-06-01", "value": 12681276.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-07-01", "value": 12696115.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-08-01", "value": 12712303.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-09-01", "value": 12708428.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-10-01", "value": 12701945.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-11-01", "value": 12766804.0, "code": "MAM1NAM2M2MO"}, {"date": "2025-12-01", "value": 12789051.0, "code": "MAM1NAM2M2MO"}, {"date": "2026-01-01", "value": 12791117.0, "code": "MAM1NAM2M2MO"}], "money_stock_m3": [{"date": "2021-01-01", "value": 14860492.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-02-01", "value": 14846612.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-03-01", "value": 14895043.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-04-01", "value": 15082268.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-05-01", "value": 15145502.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-06-01", "value": 15176271.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-07-01", "value": 15195437.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-08-01", "value": 15198803.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-09-01", "value": 15200540.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-10-01", "value": 15218135.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-11-01", "value": 15269876.0, "code": "MAM1NAM3M3MO"}, {"date": "2021-12-01", "value": 15309517.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-01-01", "value": 15344038.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-02-01", "value": 15318344.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-03-01", "value": 15359322.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-04-01", "value": 15551700.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-05-01", "value": 15578980.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-06-01", "value": 15623264.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-07-01", "value": 15648341.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-08-01", "value": 15649767.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-09-01", "value": 15632476.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-10-01", "value": 15619677.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-11-01", "value": 15677345.0, "code": "MAM1NAM3M3MO"}, {"date": "2022-12-01", "value": 15693481.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-01-01", "value": 15696317.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-02-01", "value": 15648243.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-03-01", "value": 15681922.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-04-01", "value": 15873481.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-05-01", "value": 15904516.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-06-01", "value": 15942425.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-07-01", "value": 15949800.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-08-01", "value": 15943646.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-09-01", "value": 15918249.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-10-01", "value": 15905213.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-11-01", "value": 15943279.0, "code": "MAM1NAM3M3MO"}, {"date": "2023-12-01", "value": 15962439.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-01-01", "value": 15981678.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-02-01", "value": 15928651.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-03-01", "value": 15972247.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-04-01", "value": 16125677.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-05-01", "value": 16105928.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-06-01", "value": 16094805.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-07-01", "value": 16101589.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-08-01", "value": 16074101.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-09-01", "value": 16034743.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-10-01", "value": 16013877.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-11-01", "value": 16058938.0, "code": "MAM1NAM3M3MO"}, {"date": "2024-12-01", "value": 16097395.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-01-01", "value": 16107730.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-02-01", "value": 16033407.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-03-01", "value": 16028951.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-04-01", "value": 16140771.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-05-01", "value": 16141611.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-06-01", "value": 16155376.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-07-01", "value": 16190668.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-08-01", "value": 16202080.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-09-01", "value": 16194229.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-10-01", "value": 16184789.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-11-01", "value": 16244120.0, "code": "MAM1NAM3M3MO"}, {"date": "2025-12-01", "value": 16274233.0, "code": "MAM1NAM3M3MO"}, {"date": "2026-01-01", "value": 16271984.0, "code": "MAM1NAM3M3MO"}], "cgpi": [{"date": "2021-01-01", "value": 100.3, "code": "PRCG20_2200000000"}, {"date": "2021-02-01", "value": 100.8, "code": "PRCG20_2200000000"}, {"date": "2021-03-01", "value": 101.8, "code": "PRCG20_2200000000"}, {"date": "2021-04-01", "value": 103.0, "code": "PRCG20_2200000000"}, {"date": "2021-05-01", "value": 103.6, "code": "PRCG20_2200000000"}, {"date": "2021-06-01", "value": 104.3, "code": "PRCG20_2200000000"}, {"date": "2021-07-01", "value": 105.4, "code": "PRCG20_2200000000"}, {"date": "2021-08-01", "value": 105.6, "code": "PRCG20_2200000000"}, {"date": "2021-09-01", "value": 106.0, "code": "PRCG20_2200000000"}, {"date": "2021-10-01", "value": 107.7, "code": "PRCG20_2200000000"}, {"date": "2021-11-01", "value": 108.4, "code": "PRCG20_2200000000"}, {"date": "2021-12-01", "value": 108.4, "code": "PRCG20_2200000000"}, {"date": "2022-01-01", "value": 109.5, "code": "PRCG20_2200000000"}, {"date": "2022-02-01", "value": 110.4, "code": "PRCG20_2200000000"}, {"date": "2022-03-01", "value": 111.5, "code": "PRCG20_2200000000"}, {"date": "2022-04-01", "value": 113.5, "code": "PRCG20_2200000000"}, {"date": "2022-05-01", "value": 113.5, "code": "PRCG20_2200000000"}, {"date": "2022-06-01", "value": 114.5, "code": "PRCG20_2200000000"}, {"date": "2022-07-01", "value": 115.4, "code": "PRCG20_2200000000"}, {"date": "2022-08-01", "value": 115.9, "code": "PRCG20_2200000000"}, {"date": "2022-09-01", "value": 117.0, "code": "PRCG20_2200000000"}, {"date": "2022-10-01", "value": 118.2, "code": "PRCG20_2200000000"}, {"date": "2022-11-01", "value": 119.2, "code": "PRCG20_2200000000"}, {"date": "2022-12-01", "value": 119.9, "code": "PRCG20_2200000000"}, {"date": "2023-01-01", "value": 120.0, "code": "PRCG20_2200000000"}, {"date": "2023-02-01", "value": 119.7, "code": "PRCG20_2200000000"}, {"date": "2023-03-01", "value": 119.8, "code": "PRCG20_2200000000"}, {"date": "2023-04-01", "value": 120.4, "code": "PRCG20_2200000000"}, {"date": "2023-05-01", "value": 119.6, "code": "PRCG20_2200000000"}, {"date": "2023-06-01", "value": 119.6, "code": "PRCG20_2200000000"}, {"date": "2023-07-01", "value": 119.7, "code": "PRCG20_2200000000"}, {"date": "2023-08-01", "value": 120.0, "code": "PRCG20_2200000000"}, {"date": "2023-09-01", "value": 119.8, "code": "PRCG20_2200000000"}, {"date": "2023-10-01", "value": 119.6, "code": "PRCG20_2200000000"}, {"date": "2023-11-01", "value": 119.9, "code": "PRCG20_2200000000"}, {"date": "2023-12-01", "value": 120.2, "code": "PRCG20_2200000000"}, {"date": "2024-01-01", "value": 120.4, "code": "PRCG20_2200000000"}, {"date": "2024-02-01", "value": 120.6, "code": "PRCG20_2200000000"}, {"date": "2024-03-01", "value": 121.0, "code": "PRCG20_2200000000"}, {"date": "2024-04-01", "value": 121.8, "code": "PRCG20_2200000000"}, {"date": "2024-05-01", "value": 122.7, "code": "PRCG20_2200000000"}, {"date": "2024-06-01", "value": 123.0, "code": "PRCG20_2200000000"}, {"date": "2024-07-01", "value": 123.6, "code": "PRCG20_2200000000"}, {"date": "2024-08-01", "value": 123.2, "code": "PRCG20_2200000000"}, {"date": "2024-09-01", "value": 123.6, "code": "PRCG20_2200000000"}, {"date": "2024-10-01", "value": 124.2, "code": "PRCG20_2200000000"}, {"date": "2024-11-01", "value": 124.6, "code": "PRCG20_2200000000"}, {"date": "2024-12-01", "value": 125.1, "code": "PRCG20_2200000000"}, {"date": "2025-01-01", "value": 125.5, "code": "PRCG20_2200000000"}, {"date": "2025-02-01", "value": 125.8, "code": "PRCG20_2200000000"}, {"date": "2025-03-01", "value": 126.2, "code": "PRCG20_2200000000"}, {"date": "2025-04-01", "value": 126.6, "code": "PRCG20_2200000000"}, {"date": "2025-05-01", "value": 126.5, "code": "PRCG20_2200000000"}, {"date": "2025-06-01", "value": 126.4, "code": "PRCG20_2200000000"}, {"date": "2025-07-01", "value": 126.7, "code": "PRCG20_2200000000"}, {"date": "2025-08-01", "value": 126.4, "code": "PRCG20_2200000000"}, {"date": "2025-09-01", "value": 127.0, "code": "PRCG20_2200000000"}, {"date": "2025-10-01", "value": 127.6, "code": "PRCG20_2200000000"}, {"date": "2025-11-01", "value": 128.0, "code": "PRCG20_2200000000"}, {"date": "2025-12-01", "value": 128.1, "code": "PRCG20_2200000000"}, {"date": "2026-01-01", "value": 128.4, "code": "PRCG20_2200000000"}], "exchange_rate_usd_jpy": [{"date": "2021-01-01", "value": 103.7, "code": "FXERM07"}, {"date": "2021-02-01", "value": 105.38, "code": "FXERM07"}, {"date": "2021-03-01", "value": 108.7, "code": "FXERM07"}, {"date": "2021-04-01", "value": 109.1, "code": "FXERM07"}, {"date": "2021-05-01", "value": 109.13, "code": "FXERM07"}, {"date": "2021-06-01", "value": 110.09, "code": "FXERM07"}, {"date": "2021-07-01", "value": 110.26, "code": "FXERM07"}, {"date": "2021-08-01", "value": 109.82, "code": "FXERM07"}, {"date": "2021-09-01", "value": 110.2, "code": "FXERM07"}, {"date": "2021-10-01", "value": 113.09, "code": "FXERM07"}, {"date": "2021-11-01", "value": 114.03, "code": "FXERM07"}, {"date": "2021-12-01", "value": 113.88, "code": "FXERM07"}, {"date": "2022-01-01", "value": 114.84, "code": "FXERM07"}, {"date": "2022-02-01", "value": 115.16, "code": "FXERM07"}, {"date": "2022-03-01", "value": 118.54, "code": "FXERM07"}, {"date": "2022-04-01", "value": 126.13, "code": "FXERM07"}, {"date": "2022-05-01", "value": 128.68, "code": "FXERM07"}, {"date": "2022-06-01", "value": 133.85, "code": "FXERM07"}, {"date": "2022-07-01", "value": 136.7, "code": "FXERM07"}, {"date": "2022-08-01", "value": 135.28, "code": "FXERM07"}, {"date": "2022-09-01", "value": 143.09, "code": "FXERM07"}, {"date": "2022-10-01", "value": 147.16, "code": "FXERM07"}, {"date": "2022-11-01", "value": 142.17, "code": "FXERM07"}, {"date": "2022-12-01", "value": 134.85, "code": "FXERM07"}, {"date": "2023-01-01", "value": 130.28, "code": "FXERM07"}, {"date": "2023-02-01", "value": 132.69, "code": "FXERM07"}, {"date": "2023-03-01", "value": 133.86, "code": "FXERM07"}, {"date": "2023-04-01", "value": 133.4, "code": "FXERM07"}, {"date": "2023-05-01", "value": 137.39, "code": "FXERM07"}, {"date": "2023-06-01", "value": 141.33, "code": "FXERM07"}, {"date": "2023-07-01", "value": 141.2, "code": "FXERM07"}, {"date": "2023-08-01", "value": 144.73, "code": "FXERM07"}, {"date": "2023-09-01", "value": 147.65, "code": "FXERM07"}, {"date": "2023-10-01", "value": 149.59, "code": "FXERM07"}, {"date": "2023-11-01", "value": 149.88, "code": "FXERM07"}, {"date": "2023-12-01", "value": 144.09, "code": "FXERM07"}, {"date": "2024-01-01", "value": 146.59, "code": "FXERM07"}, {"date": "2024-02-01", "value": 149.41, "code": "FXERM07"}, {"date": "2024-03-01", "value": 149.7, "code": "FXERM07"}, {"date": "2024-04-01", "value": 153.57, "code": "FXERM07"}, {"date": "2024-05-01", "value": 156.21, "code": "FXERM07"}, {"date": "2024-06-01", "value": 157.9, "code": "FXERM07"}, {"date": "2024-07-01", "value": 157.86, "code": "FXERM07"}, {"date": "2024-08-01", "value": 146.29, "code": "FXERM07"}, {"date": "2024-09-01", "value": 143.31, "code": "FXERM07"}, {"date": "2024-10-01", "value": 149.6, "code": "FXERM07"}, {"date": "2024-11-01", "value": 153.82, "code": "FXERM07"}, {"date": "2024-12-01", "value": 153.72, "code": "FXERM07"}, {"date": "2025-01-01", "value": 156.42, "code": "FXERM07"}, {"date": "2025-02-01", "value": 152.03, "code": "FXERM07"}, {"date": "2025-03-01", "value": 149.14, "code": "FXERM07"}, {"date": "2025-04-01", "value": 144.27, "code": "FXERM07"}, {"date": "2025-05-01", "value": 144.77, "code": "FXERM07"}, {"date": "2025-06-01", "value": 144.47, "code": "FXERM07"}, {"date": "2025-07-01", "value": 146.85, "code": "FXERM07"}, {"date": "2025-08-01", "value": 147.64, "code": "FXERM07"}, {"date": "2025-09-01", "value": 147.93, "code": "FXERM07"}, {"date": "2025-10-01", "value": 151.32, "code": "FXERM07"}, {"date": "2025-11-01", "value": 155.08, "code": "FXERM07"}, {"date": "2025-12-01", "value": 155.85, "code": "FXERM07"}, {"date": "2026-01-01", "value": 156.79, "code": "FXERM07"}], "call_rate": [{"date": "2021-01-01", "value": -0.017, "code": "STRACLUCON"}, {"date": "2021-02-01", "value": -0.016, "code": "STRACLUCON"}, {"date": "2021-03-01", "value": -0.017, "code": "STRACLUCON"}, {"date": "2021-04-01", "value": -0.012, "code": "STRACLUCON"}, {"date": "2021-05-01", "value": -0.017, "code": "STRACLUCON"}, {"date": "2021-06-01", "value": -0.029, "code": "STRACLUCON"}, {"date": "2021-07-01", "value": -0.036, "code": "STRACLUCON"}, {"date": "2021-08-01", "value": -0.034, "code": "STRACLUCON"}, {"date": "2021-09-01", "value": -0.022, "code": "STRACLUCON"}, {"date": "2021-10-01", "value": -0.027, "code": "STRACLUCON"}, {"date": "2021-11-01", "value": -0.04, "code": "STRACLUCON"}, {"date": "2021-12-01", "value": -0.026, "code": "STRACLUCON"}, {"date": "2022-01-01", "value": -0.02, "code": "STRACLUCON"}, {"date": "2022-02-01", "value": -0.018, "code": "STRACLUCON"}, {"date": "2022-03-01", "value": -0.008, "code": "STRACLUCON"}, {"date": "2022-04-01", "value": -0.012, "code": "STRACLUCON"}, {"date": "2022-05-01", "value": -0.018, "code": "STRACLUCON"}, {"date": "2022-06-01", "value": -0.038, "code": "STRACLUCON"}, {"date": "2022-07-01", "value": -0.012, "code": "STRACLUCON"}, {"date": "2022-08-01", "value": -0.018, "code": "STRACLUCON"}, {"date": "2022-09-01", "value": -0.049, "code": "STRACLUCON"}, {"date": "2022-10-01", "value": -0.05, "code": "STRACLUCON"}, {"date": "2022-11-01", "value": -0.067, "code": "STRACLUCON"}, {"date": "2022-12-01", "value": -0.066, "code": "STRACLUCON"}, {"date": "2023-01-01", "value": -0.02, "code": "STRACLUCON"}, {"date": "2023-02-01", "value": -0.019, "code": "STRACLUCON"}, {"date": "2023-03-01", "value": -0.017, "code": "STRACLUCON"}, {"date": "2023-04-01", "value": -0.015, "code": "STRACLUCON"}, {"date": "2023-05-01", "value": -0.051, "code": "STRACLUCON"}, {"date": "2023-06-01", "value": -0.066, "code": "STRACLUCON"}, {"date": "2023-07-01", "value": -0.046, "code": "STRACLUCON"}, {"date": "2023-08-01", "value": -0.063, "code": "STRACLUCON"}, {"date": "2023-09-01", "value": -0.054, "code": "STRACLUCON"}, {"date": "2023-10-01", "value": -0.02, "code": "STRACLUCON"}, {"date": "2023-11-01", "value": -0.015, "code": "STRACLUCON"}, {"date": "2023-12-01", "value": -0.012, "code": "STRACLUCON"}, {"date": "2024-01-01", "value": -0.014, "code": "STRACLUCON"}, {"date": "2024-02-01", "value": -0.006, "code": "STRACLUCON"}, {"date": "2024-03-01", "value": 0.022, "code": "STRACLUCON"}, {"date": "2024-04-01", "value": 0.077, "code": "STRACLUCON"}, {"date": "2024-05-01", "value": 0.077, "code": "STRACLUCON"}, {"date": "2024-06-01", "value": 0.077, "code": "STRACLUCON"}, {"date": "2024-07-01", "value": 0.078, "code": "STRACLUCON"}, {"date": "2024-08-01", "value": 0.227, "code": "STRACLUCON"}, {"date": "2024-09-01", "value": 0.227, "code": "STRACLUCON"}, {"date": "2024-10-01", "value": 0.227, "code": "STRACLUCON"}, {"date": "2024-11-01", "value": 0.227, "code": "STRACLUCON"}, {"date": "2024-12-01", "value": 0.227, "code": "STRACLUCON"}, {"date": "2025-01-01", "value": 0.293, "code": "STRACLUCON"}, {"date": "2025-02-01", "value": 0.478, "code": "STRACLUCON"}, {"date": "2025-03-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-04-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-05-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-06-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-07-01", "value": 0.478, "code": "STRACLUCON"}, {"date": "2025-08-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-09-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-10-01", "value": 0.477, "code": "STRACLUCON"}, {"date": "2025-11-01", "value": 0.478, "code": "STRACLUCON"}, {"date": "2025-12-01", "value": 0.557, "code": "STRACLUCON"}, {"date": "2026-01-01", "value": 0.728, "code": "STRACLUCON"}], "basic_discount_rate": [{"date": "2021-01-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-02-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-03-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-04-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-05-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-06-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-07-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-08-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-09-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-10-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-11-01", "value": 0.3, "code": "MADR1M"}, {"date": "2021-12-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-01-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-02-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-03-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-04-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-05-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-06-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-07-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-08-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-09-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-10-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-11-01", "value": 0.3, "code": "MADR1M"}, {"date": "2022-12-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-01-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-02-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-03-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-04-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-05-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-06-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-07-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-08-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-09-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-10-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-11-01", "value": 0.3, "code": "MADR1M"}, {"date": "2023-12-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-01-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-02-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-03-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-04-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-05-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-06-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-07-01", "value": 0.3, "code": "MADR1M"}, {"date": "2024-08-01", "value": 0.5, "code": "MADR1M"}, {"date": "2024-09-01", "value": 0.5, "code": "MADR1M"}, {"date": "2024-10-01", "value": 0.5, "code": "MADR1M"}, {"date": "2024-11-01", "value": 0.5, "code": "MADR1M"}, {"date": "2024-12-01", "value": 0.5, "code": "MADR1M"}, {"date": "2025-01-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-02-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-03-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-04-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-05-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-06-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-07-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-08-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-09-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-10-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-11-01", "value": 0.75, "code": "MADR1M"}, {"date": "2025-12-01", "value": 1.0, "code": "MADR1M"}, {"date": "2026-01-01", "value": 1.0, "code": "MADR1M"}], "tankan_di": [{"date": "2021-01-01", "value": 5.0, "code": "TK99F1000601GCQ01000"}, {"date": "2021-01-01", "value": -1.0, "code": "TK99F2000601GCQ01000"}, {"date": "2021-04-01", "value": 14.0, "code": "TK99F1000601GCQ01000"}, {"date": "2021-04-01", "value": 1.0, "code": "TK99F2000601GCQ01000"}, {"date": "2021-07-01", "value": 18.0, "code": "TK99F1000601GCQ01000"}, {"date": "2021-07-01", "value": 2.0, "code": "TK99F2000601GCQ01000"}, {"date": "2021-10-01", "value": 18.0, "code": "TK99F1000601GCQ01000"}, {"date": "2021-10-01", "value": 9.0, "code": "TK99F2000601GCQ01000"}, {"date": "2022-01-01", "value": 14.0, "code": "TK99F1000601GCQ01000"}, {"date": "2022-01-01", "value": 9.0, "code": "TK99F2000601GCQ01000"}, {"date": "2022-04-01", "value": 13.0, "code": "TK99F2000601GCQ01000"}, {"date": "2022-04-01", "value": 9.0, "code": "TK99F1000601GCQ01000"}, {"date": "2022-07-01", "value": 14.0, "code": "TK99F2000601GCQ01000"}, {"date": "2022-07-01", "value": 8.0, "code": "TK99F1000601GCQ01000"}, {"date": "2022-10-01", "value": 19.0, "code": "TK99F2000601GCQ01000"}, {"date": "2022-10-01", "value": 7.0, "code": "TK99F1000601GCQ01000"}, {"date": "2023-01-01", "value": 20.0, "code": "TK99F2000601GCQ01000"}, {"date": "2023-01-01", "value": 1.0, "code": "TK99F1000601GCQ01000"}, {"date": "2023-04-01", "value": 5.0, "code": "TK99F1000601GCQ01000"}, {"date": "2023-04-01", "value": 23.0, "code": "TK99F2000601GCQ01000"}, {"date": "2023-07-01", "value": 27.0, "code": "TK99F2000601GCQ01000"}, {"date": "2023-07-01", "value": 9.0, "code": "TK99F1000601GCQ01000"}, {"date": "2023-10-01", "value": 12.0, "code": "TK99F1000601GCQ01000"}, {"date": "2023-10-01", "value": 30.0, "code": "TK99F2000601GCQ01000"}, {"date": "2024-01-01", "value": 34.0, "code": "TK99F2000601GCQ01000"}, {"date": "2024-01-01", "value": 11.0, "code": "TK99F1000601GCQ01000"}, {"date": "2024-04-01", "value": 33.0, "code": "TK99F2000601GCQ01000"}, {"date": "2024-04-01", "value": 13.0, "code": "TK99F1000601GCQ01000"}, {"date": "2024-07-01", "value": 13.0, "code": "TK99F1000601GCQ01000"}, {"date": "2024-07-01", "value": 34.0, "code": "TK99F2000601GCQ01000"}, {"date": "2024-10-01", "value": 33.0, "code": "TK99F2000601GCQ01000"}, {"date": "2024-10-01", "value": 14.0, "code": "TK99F1000601GCQ01000"}, {"date": "2025-01-01", "value": 35.0, "code": "TK99F2000601GCQ01000"}, {"date": "2025-01-01", "value": 12.0, "code": "TK99F1000601GCQ01000"}, {"date": "2025-04-01", "value": 34.0, "code": "TK99F2000601GCQ01000"}, {"date": "2025-04-01", "value": 13.0, "code": "TK99F1000601GCQ01000"}, {"date": "2025-07-01", "value": 34.0, "code": "TK99F2000601GCQ01000"}, {"date": "2025-07-01", "value": 14.0, "code": "TK99F1000601GCQ01000"}, {"date": "2025-10-01", "value": 15.0, "code": "TK99F1000601GCQ01000"}, {"date": "2025-10-01", "value": 34.0, "code": "TK99F2000601GCQ01000"}], "balance_of_payments": [{"date": "2021-01-01", "value": 6173.59066112, "code": "BPBP6JYNCB"}, {"date": "2021-02-01", "value": 29892.796903, "code": "BPBP6JYNCB"}, {"date": "2021-03-01", "value": 26298.75574209, "code": "BPBP6JYNCB"}, {"date": "2021-04-01", "value": 17722.60156821, "code": "BPBP6JYNCB"}, {"date": "2021-05-01", "value": 24323.74755529, "code": "BPBP6JYNCB"}, {"date": "2021-06-01", "value": 13382.91256806, "code": "BPBP6JYNCB"}, {"date": "2021-07-01", "value": 23325.72557245, "code": "BPBP6JYNCB"}, {"date": "2021-08-01", "value": 21171.35452903, "code": "BPBP6JYNCB"}, {"date": "2021-09-01", "value": 16346.82620197, "code": "BPBP6JYNCB"}, {"date": "2021-10-01", "value": 17074.72002237, "code": "BPBP6JYNCB"}, {"date": "2021-11-01", "value": 15565.93684126, "code": "BPBP6JYNCB"}, {"date": "2021-12-01", "value": 3388.06430062, "code": "BPBP6JYNCB"}, {"date": "2022-01-01", "value": -6603.14658538, "code": "BPBP6JYNCB"}, {"date": "2022-02-01", "value": 22602.55355038, "code": "BPBP6JYNCB"}, {"date": "2022-03-01", "value": 32918.43244641, "code": "BPBP6JYNCB"}, {"date": "2022-04-01", "value": 10601.98274795, "code": "BPBP6JYNCB"}, {"date": "2022-05-01", "value": 7557.10619389, "code": "BPBP6JYNCB"}, {"date": "2022-06-01", "value": 4836.95899956, "code": "BPBP6JYNCB"}, {"date": "2022-07-01", "value": 8196.69653234, "code": "BPBP6JYNCB"}, {"date": "2022-08-01", "value": 6216.92792955, "code": "BPBP6JYNCB"}, {"date": "2022-09-01", "value": 7894.60444802, "code": "BPBP6JYNCB"}, {"date": "2022-10-01", "value": -517.2689155, "code": "BPBP6JYNCB"}, {"date": "2022-11-01", "value": 17961.82854768, "code": "BPBP6JYNCB"}, {"date": "2022-12-01", "value": 2758.82035746, "code": "BPBP6JYNCB"}, {"date": "2023-01-01", "value": -20741.57229487, "code": "BPBP6JYNCB"}, {"date": "2023-02-01", "value": 22770.49906537, "code": "BPBP6JYNCB"}, {"date": "2023-03-01", "value": 23404.15702177, "code": "BPBP6JYNCB"}, {"date": "2023-04-01", "value": 18690.84645707, "code": "BPBP6JYNCB"}, {"date": "2023-05-01", "value": 21570.44243113, "code": "BPBP6JYNCB"}, {"date": "2023-06-01", "value": 16836.28255002, "code": "BPBP6JYNCB"}, {"date": "2023-07-01", "value": 29161.34701126, "code": "BPBP6JYNCB"}, {"date": "2023-08-01", "value": 23710.07668608, "code": "BPBP6JYNCB"}, {"date": "2023-09-01", "value": 29459.99395976, "code": "BPBP6JYNCB"}, {"date": "2023-10-01", "value": 27708.63406739, "code": "BPBP6JYNCB"}, {"date": "2023-11-01", "value": 21103.29885325, "code": "BPBP6JYNCB"}, {"date": "2023-12-01", "value": 9109.77087006, "code": "BPBP6JYNCB"}, {"date": "2024-01-01", "value": 2987.9884505, "code": "BPBP6JYNCB"}, {"date": "2024-02-01", "value": 27343.9115187, "code": "BPBP6JYNCB"}, {"date": "2024-03-01", "value": 34372.75174932, "code": "BPBP6JYNCB"}, {"date": "2024-04-01", "value": 21132.81895876, "code": "BPBP6JYNCB"}, {"date": "2024-05-01", "value": 28750.47677375, "code": "BPBP6JYNCB"}, {"date": "2024-06-01", "value": 16890.74115665, "code": "BPBP6JYNCB"}, {"date": "2024-07-01", "value": 32452.64392084, "code": "BPBP6JYNCB"}, {"date": "2024-08-01", "value": 38916.93595897, "code": "BPBP6JYNCB"}, {"date": "2024-09-01", "value": 15374.46295862, "code": "BPBP6JYNCB"}, {"date": "2024-10-01", "value": 24538.40215633, "code": "BPBP6JYNCB"}, {"date": "2024-11-01", "value": 33388.85665141, "code": "BPBP6JYNCB"}, {"date": "2024-12-01", "value": 10718.44750012, "code": "BPBP6JYNCB"}, {"date": "2025-01-01", "value": -3446.07813266, "code": "BPBP6JYNCB"}, {"date": "2025-02-01", "value": 40087.43412121, "code": "BPBP6JYNCB"}, {"date": "2025-03-01", "value": 36688.29763536, "code": "BPBP6JYNCB"}, {"date": "2025-04-01", "value": 21396.0115024, "code": "BPBP6JYNCB"}, {"date": "2025-05-01", "value": 33221.30461632, "code": "BPBP6JYNCB"}, {"date": "2025-06-01", "value": 12565.77159633, "code": "BPBP6JYNCB"}, {"date": "2025-07-01", "value": 25647.02916537, "code": "BPBP6JYNCB"}, {"date": "2025-08-01", "value": 36002.88437655, "code": "BPBP6JYNCB"}, {"date": "2025-09-01", "value": 44272.62230773, "code": "BPBP6JYNCB"}, {"date": "2025-10-01", "value": 28334.84709596, "code": "BPBP6JYNCB"}, {"date": "2025-11-01", "value": 36741.22610016, "code": "BPBP6JYNCB"}, {"date": "2025-12-01", "value": 7288.10479322, "code": "BPBP6JYNCB"}]};
+
+const colors = {
+  blue: '#3182ce', lightBlue: '#63b3ed',
+  red: '#e53e3e', orange: '#d69e2e',
+  green: '#38a169', purple: '#805ad5',
+  gray: '#a0aec0'
+};
+
+const layoutBase = {
+  font: { family: '"Hiragino Sans", "Noto Sans JP", sans-serif', color: '#2d3748' },
+  paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+  margin: { l: 60, r: 20, t: 40, b: 40 },
+  hovermode: 'x unified',
+  xaxis: { gridcolor: '#e2e8f0', showgrid: true },
+  yaxis: { gridcolor: '#e2e8f0', showgrid: true },
+};
+
+function dates(key) { return DATA[key].map(d => d.date); }
+function vals(key) { return DATA[key].map(d => d.value); }
+function datesFor(key, code) { return DATA[key].filter(d => d.code === code).map(d => d.date); }
+function valsFor(key, code) { return DATA[key].filter(d => d.code === code).map(d => d.value); }
+
+// --- KPI Cards ---
+const kpis = [
+  { key: 'call_rate', label: 'コールレート', unit: '%', fmt: v => v.toFixed(3) + '%' },
+  { key: 'basic_discount_rate', label: '基準割引率', unit: '%', fmt: v => v.toFixed(2) + '%' },
+  { key: 'exchange_rate_usd_jpy', label: 'USD/JPY', unit: '円', fmt: v => v.toFixed(2) + '円' },
+  { key: 'cgpi', label: '企業物価指数', unit: '', fmt: v => v.toFixed(1) },
+  { key: 'monetary_base', label: 'マネタリーベース', unit: '兆円', fmt: v => (v/10000).toFixed(1) + '兆円' },
+  { key: 'balance_of_payments', label: '経常収支', unit: '億円', fmt: v => v.toLocaleString('ja-JP', {maximumFractionDigits:0}) + '億円' },
+];
+
+const kpiRow = document.getElementById('kpi-row');
+kpis.forEach(k => {
+  const d = DATA[k.key];
+  const latest = d[d.length - 1];
+  const prev = d[d.length - 2];
+  const delta = latest.value - prev.value;
+  const pct = prev.value !== 0 ? (delta / Math.abs(prev.value) * 100) : 0;
+  const isUp = delta >= 0;
+  const card = document.createElement('div');
+  card.className = 'kpi-card';
+  card.innerHTML = `
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.fmt(latest.value)}</div>
+    <div class="kpi-delta ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${delta.toFixed(2)} (${isUp ? '+' : ''}${pct.toFixed(1)}%)</div>
+    <div class="kpi-sub">${latest.date.slice(0,7)}</div>
+  `;
+  kpiRow.appendChild(card);
+});
+
+// --- Charts ---
+
+// 1. Interest Rates (dual axis)
+Plotly.newPlot('chart-rates', [
+  { x: dates('call_rate'), y: vals('call_rate'), name: 'コールレート (無担保翌日物)', line: { color: colors.blue, width: 2.5 }, },
+  { x: dates('basic_discount_rate'), y: vals('basic_discount_rate'), name: '基準割引率', line: { color: colors.red, width: 2.5, dash: 'dot' }, },
+], {
+  ...layoutBase,
+  title: { text: '政策金利の推移', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '%', zeroline: true, zerolinecolor: '#a0aec0' },
+  shapes: [
+    { type: 'line', x0: '2024-03-01', x1: '2024-03-01', y0: 0, y1: 1, yref: 'paper', line: { color: colors.orange, width: 1.5, dash: 'dash' } },
+  ],
+  annotations: [
+    { x: '2024-03-01', y: 0.5, yref: 'paper', text: 'マイナス金利解除', showarrow: false, font: { size: 11, color: colors.orange }, xanchor: 'left', xshift: 4 },
+  ],
+  legend: { orientation: 'h', y: 1.12 },
+}, { responsive: true });
+
+// 2. Monetary Base
+const mbVals = vals('monetary_base').map(v => v / 10000);
+Plotly.newPlot('chart-mb', [
+  { x: dates('monetary_base'), y: mbVals, type: 'scatter', mode: 'lines', fill: 'tozeroy',
+    fillcolor: 'rgba(49,130,206,0.1)', line: { color: colors.blue, width: 2 }, name: 'マネタリーベース' },
+], {
+  ...layoutBase,
+  title: { text: 'マネタリーベースの推移', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '兆円' },
+  shapes: [
+    { type: 'line', x0: '2025-01-01', x1: '2025-01-01', y0: 0, y1: 1, yref: 'paper', line: { color: colors.red, width: 1.5, dash: 'dash' } },
+  ],
+  annotations: [
+    { x: '2025-01-01', y: 0.9, yref: 'paper', text: 'QT開始', showarrow: false, font: { size: 11, color: colors.red }, xanchor: 'left', xshift: 4 },
+  ],
+}, { responsive: true });
+
+// 3. Money Stock
+const m2Vals = vals('money_stock_m2').map(v => v / 10000);
+const m3Vals = vals('money_stock_m3').map(v => v / 10000);
+Plotly.newPlot('chart-ms', [
+  { x: dates('money_stock_m2'), y: m2Vals, name: 'M2', line: { color: colors.blue, width: 2.5 } },
+  { x: dates('money_stock_m3'), y: m3Vals, name: 'M3', line: { color: colors.green, width: 2.5 } },
+], {
+  ...layoutBase,
+  title: { text: 'マネーストック (M2 / M3) の推移', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '兆円' },
+  legend: { orientation: 'h', y: 1.12 },
+}, { responsive: true });
+
+// 4. CGPI
+Plotly.newPlot('chart-cgpi', [
+  { x: dates('cgpi'), y: vals('cgpi'), type: 'scatter', mode: 'lines',
+    line: { color: colors.red, width: 2.5 }, name: 'CGPI' },
+], {
+  ...layoutBase,
+  title: { text: '企業物価指数 (CGPI) の推移 (2020年=100)', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '指数' },
+  shapes: [
+    { type: 'line', x0: '2021-01-01', x1: '2026-02-01', y0: 100, y1: 100, line: { color: colors.gray, width: 1, dash: 'dot' } },
+  ],
+  annotations: [
+    { x: '2021-03-01', y: 100, text: '基準値 (100)', showarrow: false, font: { size: 10, color: colors.gray }, yshift: -12 },
+  ],
+}, { responsive: true });
+
+// 5. Exchange Rate
+Plotly.newPlot('chart-fx', [
+  { x: dates('exchange_rate_usd_jpy'), y: vals('exchange_rate_usd_jpy'), type: 'scatter', mode: 'lines',
+    line: { color: colors.purple, width: 2.5 }, name: 'USD/JPY' },
+], {
+  ...layoutBase,
+  title: { text: '為替レート (USD/JPY) の推移', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '円/ドル', autorange: 'reversed' },
+  annotations: [
+    { x: '2024-06-01', y: 157.9, text: '157.90円 (最安値)', showarrow: true, arrowhead: 2, ax: -60, ay: -30, font: { size: 11, color: colors.purple } },
+  ],
+}, { responsive: true });
+
+// 6. Tankan DI
+Plotly.newPlot('chart-tankan', [
+  { x: datesFor('tankan_di', 'TK99F1000601GCQ01000'), y: valsFor('tankan_di', 'TK99F1000601GCQ01000'),
+    name: '実績', mode: 'lines+markers', line: { color: colors.blue, width: 2.5 }, marker: { size: 7 } },
+  { x: datesFor('tankan_di', 'TK99F2000601GCQ01000'), y: valsFor('tankan_di', 'TK99F2000601GCQ01000'),
+    name: '予測', mode: 'lines+markers', line: { color: colors.orange, width: 2, dash: 'dash' }, marker: { size: 6 } },
+], {
+  ...layoutBase,
+  title: { text: '短観 業況判断DI (大企業製造業)', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '%ポイント', zeroline: true, zerolinecolor: '#e53e3e', zerolinewidth: 1.5 },
+  legend: { orientation: 'h', y: 1.12 },
+}, { responsive: true });
+
+// 7. Balance of Payments
+const bopVals = vals('balance_of_payments').map(v => v / 10000);
+const bopColors = bopVals.map(v => v >= 0 ? colors.green : colors.red);
+Plotly.newPlot('chart-bop', [
+  { x: dates('balance_of_payments'), y: bopVals, type: 'bar', marker: { color: bopColors }, name: '経常収支' },
+], {
+  ...layoutBase,
+  title: { text: '経常収支の推移', font: { size: 15 } },
+  yaxis: { ...layoutBase.yaxis, title: '兆円' },
+}, { responsive: true });
+</script>
+
+</body>
+</html>
